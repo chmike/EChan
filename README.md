@@ -28,4 +28,4 @@ c.Close()
 
 Based on an idea of [oliverpool](https://github.com/oliverpool) discussed [here](https://github.com/npat-efault/musings/issues/1#issuecomment-339889714).
 
-**Warning**: The EChan must be closed to be garbage collected. This is because of its internal go routine. If you don't close the EChan, your program will have a memon leak.
+**Warning**: The EChan must be closed to be garbage collected. This is because of its internal go routine. If you don't close the EChan, your program will have a memory leak.
