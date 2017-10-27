@@ -25,6 +25,6 @@ Example usage:
     c.Close()
 
 
-
+Based on an idea of [oliverpool](https://github.com/oliverpool) discussed [here](https://github.com/npat-efault/musings/issues/1#issuecomment-339889714).
 
 
