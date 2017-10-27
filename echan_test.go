@@ -1,8 +1,10 @@
 package echan
 
-import "testing"
-import "time"
-import "sync"
+import (
+	"sync"
+	"testing"
+	"time"
+)
 
 func TestEChan1(t *testing.T) {
 	var c = New(200)
@@ -142,6 +144,27 @@ func TestCloseEChan2(t *testing.T) {
 	for i := 0; i < 200; i++ {
 		c.In() <- i
 	}
+	c.Close()
+	time.Sleep(100 * time.Millisecond)
+	if c.buf != nil {
+		t.Error("expected nil buf")
+	}
+}
+
+func TestCloseEChan3(t *testing.T) {
+	var c = New(100)
+	go func() {
+		defer func() {
+			if r := recover(); r == nil {
+				t.Error("expected panic error")
+			}
+		}()
+		for i := 0; i < 200; i++ {
+			c.In() <- i
+		}
+		t.Error("expected a panic")
+	}()
+	time.Sleep(250 * time.Millisecond)
 	c.Close()
 	time.Sleep(100 * time.Millisecond)
 	if c.buf != nil {
