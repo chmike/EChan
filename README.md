@@ -12,18 +12,19 @@ OS hog.
 
 Example usage:
 
-    // Instantiating the elastic channel with an upper limit value
-    c := echan.New(10000)
+``` Go
+// Instantiating the elastic channel with an upper limit value
+c := echan.New(10000)
 
-    // Queuing a value in the channel. Blocks if the channel is full.
-    c.In() <- 123
+// Queuing a value in the channel. Blocks if the channel is full.
+c.In() <- 123
 
-    // Reading a value out of the channel. Blocks while the channel is empty.
-    v := <-c.Out().(int) 
+// Reading a value out of the channel. Blocks while the channel is empty.
+v := <-c.Out().(int) 
 
-    // Closing the channel
-    c.Close()
-
+// Closing the channel
+c.Close()
+```
 
 Based on an idea of [oliverpool](https://github.com/oliverpool) discussed [here](https://github.com/npat-efault/musings/issues/1#issuecomment-339889714).
 
