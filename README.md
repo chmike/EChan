@@ -2,7 +2,7 @@
 [![Build](https://travis-ci.org/chmike/EChan.svg?branch=master)](https://travis-ci.org/chmike/EChan?branch=master)
 [![Coverage](https://coveralls.io/repos/github/chmike/EChan/badge.svg?branch=master)](https://coveralls.io/github/chmike/EChan?branch=master)
 [![Go Report](https://goreportcard.com/badge/github.com/chmike/EChan)](https://goreportcard.com/report/github.com/chmike/EChan)
-![Status](https://img.shields.io/badge/status-stable-green.svg)
+![Status](https://img.shields.io/badge/status-stable-brightgreen.svg)
 
 # EChan, the elastic channel
 
