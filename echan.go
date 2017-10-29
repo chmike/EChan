@@ -24,12 +24,16 @@ type EChan struct {
 
 // New returns a new file channel.
 func New(max int) *EChan {
+	max -= 2 * chanCap
+	if max < 2*minBufCap {
+		max = 2 * minBufCap
+	}
 	var c = &EChan{
 		in:   make(chan interface{}, chanCap),
 		out:  make(chan interface{}, chanCap),
 		done: make(chan struct{}),
 		buf:  make([]interface{}, minBufCap),
-		max:  max - chanCap,
+		max:  max,
 	}
 	go c.run()
 	return c

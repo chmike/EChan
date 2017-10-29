@@ -127,6 +127,19 @@ func TestShrinkQueue(t *testing.T) {
 	}
 }
 
+func TestMaxCapacity(t *testing.T) {
+	var c = New(0)
+
+	if c.max != 2*minBufCap {
+		t.Errorf("got %d, expected %d", c.max, 2*minBufCap)
+	}
+
+	c = New(100)
+	if c.max != 100-2*chanCap {
+		t.Errorf("got %d, expected %d", c.max, 100-2*chanCap)
+	}
+}
+
 func TestCloseEChan1(t *testing.T) {
 	var c = New(100)
 	time.Sleep(100 * time.Millisecond)
