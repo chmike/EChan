@@ -1,3 +1,9 @@
+[![GoDoc](https://godoc.org/github.com/chmike/EChan?status.svg)](https://godoc.org/github.com/chmike/EChan)
+[![Build](https://travis-ci.org/chmike/EChan.svg?branch=master)](https://travis-ci.org/chmike/EChan?branch=master)
+[![Coverage](https://coveralls.io/repos/github/chmike/EChan/badge.svg?branch=master)](https://coveralls.io/github/chmike/EChan?branch=master)
+[![Go Report](https://goreportcard.com/badge/github.com/chmike/EChan)](https://goreportcard.com/report/github.com/chmike/EChan)
+![Status](https://img.shields.io/badge/status-stable-green.svg)
+
 # EChan, the elastic channel
 
 Package echan provides a channel whose capacity my grow and shrink as needed.
