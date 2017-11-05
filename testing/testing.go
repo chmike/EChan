@@ -7,14 +7,14 @@ import (
 	echan "github.com/chmike/EChan"
 )
 
-func ImmediateClosing(t *testing.T, imp echan.Implementation) {
+func ImmediateClosing(t *testing.T, imp echan.Interface) {
 	in := make(chan interface{})
 	out := make(chan interface{})
 	go close(in)
 	imp(in, out)
 }
 
-func OneElement(t *testing.T, imp echan.Implementation) {
+func OneElement(t *testing.T, imp echan.Interface) {
 	in := make(chan interface{})
 	out := make(chan interface{})
 	go func() {
@@ -32,7 +32,7 @@ func OneElement(t *testing.T, imp echan.Implementation) {
 	}
 }
 
-func SomeElements(t *testing.T, imp echan.Implementation) {
+func SomeElements(t *testing.T, imp echan.Interface) {
 	in := make(chan interface{})
 	out := make(chan interface{})
 	elts := []interface{}{
@@ -59,7 +59,7 @@ func SomeElements(t *testing.T, imp echan.Implementation) {
 	}
 }
 
-func ShouldBlock(t *testing.T, imp echan.Implementation, size int) {
+func ShouldBlock(t *testing.T, imp echan.Interface, size int) {
 	in := make(chan interface{})
 	out := make(chan interface{})
 	sigOut := make(chan struct{})
@@ -74,6 +74,7 @@ func ShouldBlock(t *testing.T, imp echan.Implementation, size int) {
 			t.Errorf("Shouldn't have accepted a new element (after %d send)", size)
 			close(sigOut)
 		case <-time.After(1 * time.Millisecond):
+			t.Log("Blocked succesfully")
 			close(sigOut)
 			t.Logf("Send %d", -2)
 			in <- -2

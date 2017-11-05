@@ -11,7 +11,7 @@ OS hog.
 */
 package echan
 
-type Implementation func(in <-chan interface{}, out chan<- interface{})
+type Interface func(in <-chan interface{}, out chan<- interface{})
 
 const minBufCap = 8
 const chanCap = 8

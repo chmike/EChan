@@ -4,7 +4,7 @@ import (
 	"github.com/chmike/EChan"
 )
 
-func New(size int) echan.Implementation {
+func New(size int) echan.Interface {
 	if size >= 2 {
 		// Two are already "buffered" via the goroutine
 		size -= 2
