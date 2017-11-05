@@ -13,6 +13,13 @@ package echan
 
 type Interface func(in <-chan interface{}, out chan<- interface{})
 
+func ChanForward(in <-chan interface{}, out chan<- interface{}) {
+	for i := range in {
+		out <- i
+	}
+	close(out)
+}
+
 const minBufCap = 8
 const chanCap = 8
 

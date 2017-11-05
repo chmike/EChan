@@ -6,9 +6,6 @@ import (
 
 func New() echan.Interface {
 	return func(in <-chan interface{}, out chan<- interface{}) {
-		for i := range in {
-			out <- i
-		}
-		close(out)
+		echan.ChanForward(in, out)
 	}
 }

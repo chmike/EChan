@@ -11,16 +11,7 @@ func New(size int) echan.Interface {
 	}
 	return func(in <-chan interface{}, out chan<- interface{}) {
 		buf := make(chan interface{}, size)
-		go func(b chan<- interface{}) {
-			for i := range in {
-				b <- i
-			}
-			close(b)
-		}(buf)
-
-		for b := range buf {
-			out <- b
-		}
-		close(out)
+		go echan.ChanForward(in, buf)
+		echan.ChanForward(buf, out)
 	}
 }
