@@ -14,3 +14,8 @@ func TestAll(t *testing.T) {
 	echanTest.SomeElements(t, bc)
 	echanTest.ShouldBlock(t, bc, 1)
 }
+
+func BenchmarkSimple(b *testing.B) {
+	bc := immediateWrite.New()
+	echanTest.BenchmarkSimple(b, bc, 100)
+}

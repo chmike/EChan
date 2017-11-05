@@ -49,3 +49,9 @@ func TestEchanCapped(t *testing.T) {
 	echanTest.SomeElements(t, bc)
 	echanTest.ShouldBlock(t, bc, 7)
 }
+
+func BenchmarkSimple(b *testing.B) {
+	s := ring.New(100)
+	bc := queue.New(s)
+	echanTest.BenchmarkSimple(b, bc, 100)
+}

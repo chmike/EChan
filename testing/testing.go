@@ -100,3 +100,17 @@ func ShouldBlock(t *testing.T, imp echan.Interface, size int) {
 		}
 	}
 }
+
+func BenchmarkSimple(b *testing.B, imp echan.Interface, size int) {
+	for n := 0; n < b.N; n++ {
+		in := make(chan interface{}, 100)
+		out := make(chan interface{}, 100)
+		for i := 0; i < size; i++ {
+			in <- i
+		}
+		close(in)
+		imp(in, out)
+		for _ = range out {
+		}
+	}
+}

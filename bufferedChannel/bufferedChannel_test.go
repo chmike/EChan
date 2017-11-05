@@ -14,3 +14,8 @@ func TestAll(t *testing.T) {
 	echanTest.SomeElements(t, bc)
 	echanTest.ShouldBlock(t, bc, 10)
 }
+
+func BenchmarkSimple(b *testing.B) {
+	bc := bufferedChannel.New(100)
+	echanTest.BenchmarkSimple(b, bc, 100)
+}
