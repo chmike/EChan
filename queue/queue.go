@@ -1,8 +1,6 @@
 package queue
 
 import (
-	"io"
-
 	"github.com/chmike/EChan"
 )
 
@@ -29,15 +27,13 @@ func New(q Interface) echan.Interface {
 				head, headOk = q.Pop()
 			}
 			close(out)
-			if c, ok := q.(io.Closer); ok {
-				c.Close()
-			}
 		}()
 
 		for {
 			if !headOk {
 				head, headOk = q.Pop()
 				if !headOk {
+					// block for the first element
 					head, headOk = <-in
 					if !headOk {
 						// in channel closed
@@ -52,8 +48,8 @@ func New(q Interface) echan.Interface {
 					// in channel closed
 					return
 				}
-				// queue is full: block until head is out
 				for !q.Push(new) {
+					// queue is full: block until head is out
 					out <- head
 					head, headOk = q.Pop()
 				}
