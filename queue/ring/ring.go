@@ -11,7 +11,7 @@ type ring struct {
 	cap  int
 }
 
-func New(capacity int) queue.CappedInterface {
+func New(capacity int) queue.Interface {
 	return &ring{
 		buf:  make([]interface{}, capacity, capacity),
 		head: 0,
@@ -20,22 +20,21 @@ func New(capacity int) queue.CappedInterface {
 	}
 }
 
-func (r ring) Len() int {
-	return r.len
-}
-
-func (r *ring) Push(e interface{}) {
+func (r *ring) Push(e interface{}) bool {
+	if r.len == r.cap {
+		return false
+	}
 	r.buf[r.head] = e
 	r.head = (r.head + 1) % r.cap
 	r.len++
+	return true
 }
 
-func (r *ring) Pop() (x interface{}) {
+func (r *ring) Pop() (x interface{}, ok bool) {
+	if r.len == 0 {
+		return nil, false
+	}
 	x = r.buf[(r.head-r.len+r.cap)%r.cap]
 	r.len--
-	return x
-}
-
-func (r *ring) IsFull() bool {
-	return r.len == r.cap
+	return x, true
 }
