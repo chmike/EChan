@@ -12,7 +12,7 @@ func TestAll(t *testing.T) {
 	echanTest.ImmediateClosing(t, bc)
 	echanTest.OneElement(t, bc)
 	echanTest.SomeElements(t, bc)
-	echanTest.ShouldBlock(t, bc, 10)
+	echanTest.ShouldBlock(t, bc, 12) // +2 because of the goroutines
 }
 
 func BenchmarkSimple(b *testing.B) {

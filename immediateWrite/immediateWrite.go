@@ -4,8 +4,7 @@ import (
 	"github.com/chmike/EChan"
 )
 
+// New directly forwards in to out
 func New() echan.Interface {
-	return func(in <-chan interface{}, out chan<- interface{}) {
-		echan.ChanForward(in, out)
-	}
+	return echan.ChanForward
 }
