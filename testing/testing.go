@@ -117,7 +117,7 @@ func BenchmarkBuffBoth(b *testing.B, imp echan.Interface, size int) {
 
 func BenchmarkBuffIn(b *testing.B, imp echan.Interface, size int) {
 	for n := 0; n < b.N; n++ {
-		in := make(chan interface{}, 100)
+		in := make(chan interface{}, size)
 		out := make(chan interface{})
 		for i := 0; i < size; i++ {
 			in <- i
