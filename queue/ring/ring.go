@@ -34,7 +34,9 @@ func (r *ring) Pop() (x interface{}, ok bool) {
 	if r.len == 0 {
 		return nil, false
 	}
-	x = r.buf[(r.head-r.len+r.cap)%r.cap]
+	i := (r.head - r.len + r.cap) % r.cap
+	x = r.buf[i]
+	r.buf[i] = nil // allow garbage collection
 	r.len--
 	return x, true
 }
