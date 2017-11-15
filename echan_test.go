@@ -1,12 +1,16 @@
 package echan_test
 
 import (
+	"testing"
+
 	"github.com/chmike/EChan"
 	"github.com/chmike/EChan/bufferedChannel"
+	"github.com/chmike/EChan/immediateWrite"
 	"github.com/chmike/EChan/queue"
 	"github.com/chmike/EChan/queue/ering"
 	"github.com/chmike/EChan/queue/ring"
 	"github.com/chmike/EChan/queue/slice"
+	etest "github.com/chmike/EChan/testing"
 )
 
 func Example() {
@@ -51,4 +55,58 @@ func Example() {
 	for _ = range out {
 	}
 	// Output:
+}
+
+func BenchmarkAll(b *testing.B) {
+	type factory func(int) echan.Interface
+	immediateWriteAdapted := func(int) echan.Interface {
+		return immediateWrite.New()
+	}
+	type qfactory func(int) queue.Interface
+	queueAdapted := func(q qfactory) func(int) echan.Interface {
+		return func(size int) echan.Interface {
+			return queue.New(q(size))
+		}
+	}
+	factories := []struct {
+		name string
+		f    factory
+	}{
+		{"bufChan", bufferedChannel.New},
+		{"ering", queueAdapted(ering.New)},
+		{"ring", queueAdapted(ring.New)},
+		{"slice", queueAdapted(slice.New)},
+		{"none", immediateWriteAdapted},
+	}
+	sizes := []struct {
+		name     string
+		capacity int
+		items    int
+	}{
+		{"Small", 5, 5},
+		{"LargeItems-SmallCap", 50, 10000},
+	}
+	benches := []struct {
+		name string
+		b    func(*testing.B, echan.Interface, int)
+	}{
+		{"BufferBoth", etest.BenchmarkBuffBoth},
+		{"BufferOut_", etest.BenchmarkBuffOut},
+		{"BufferIn__", etest.BenchmarkBuffIn},
+	}
+
+	for _, be := range benches {
+		b.Run(be.name, func(b *testing.B) {
+			for _, s := range sizes {
+				b.Run(s.name, func(b *testing.B) {
+					for _, f := range factories {
+						bc := f.f(s.capacity)
+						b.Run(f.name, func(b *testing.B) {
+							be.b(b, bc, s.items)
+						})
+					}
+				})
+			}
+		})
+	}
 }
