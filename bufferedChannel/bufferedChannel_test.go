@@ -4,18 +4,18 @@ import (
 	"testing"
 
 	"github.com/chmike/EChan/bufferedChannel"
-	echanTest "github.com/chmike/EChan/testing"
+	etest "github.com/chmike/EChan/testing"
 )
 
 func TestAll(t *testing.T) {
 	bc := bufferedChannel.New(10)
-	echanTest.ImmediateClosing(t, bc)
-	echanTest.OneElement(t, bc)
-	echanTest.SomeElements(t, bc)
-	echanTest.ShouldBlock(t, bc, 12) // +2 because of the goroutines
+	etest.ImmediateClosing(t, bc)
+	etest.OneElement(t, bc)
+	etest.SomeElements(t, bc)
+	etest.ShouldBlock(t, bc, 12) // +2 because of the goroutines
 }
 
 func BenchmarkSimple(b *testing.B) {
 	bc := bufferedChannel.New(100)
-	echanTest.BenchmarkSimple(b, bc, 100)
+	etest.BenchmarkSimple(b, bc, 100)
 }

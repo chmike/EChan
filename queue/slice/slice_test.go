@@ -5,7 +5,7 @@ import (
 
 	"github.com/chmike/EChan/queue"
 	"github.com/chmike/EChan/queue/slice"
-	echanTest "github.com/chmike/EChan/testing"
+	etest "github.com/chmike/EChan/testing"
 )
 
 func TestInterface(t *testing.T) {
@@ -35,13 +35,13 @@ func TestInterface(t *testing.T) {
 func TestEchan(t *testing.T) {
 	s := slice.New(5)
 	bc := queue.New(s)
-	echanTest.ImmediateClosing(t, bc)
-	echanTest.OneElement(t, bc)
-	echanTest.SomeElements(t, bc)
+	etest.ImmediateClosing(t, bc)
+	etest.OneElement(t, bc)
+	etest.SomeElements(t, bc)
 }
 
 func BenchmarkSimple(b *testing.B) {
 	s := slice.New(100)
 	bc := queue.New(s)
-	echanTest.BenchmarkSimple(b, bc, 100)
+	etest.BenchmarkSimple(b, bc, 100)
 }

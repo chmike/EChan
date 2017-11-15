@@ -5,7 +5,7 @@ import (
 
 	"github.com/chmike/EChan/queue"
 	"github.com/chmike/EChan/queue/ering"
-	echanTest "github.com/chmike/EChan/testing"
+	etest "github.com/chmike/EChan/testing"
 )
 
 func TestInterface(t *testing.T) {
@@ -80,14 +80,14 @@ func TestInterface(t *testing.T) {
 func TestEchanCapped(t *testing.T) {
 	s := ering.New(5)
 	bc := queue.New(s)
-	echanTest.ImmediateClosing(t, bc)
-	echanTest.OneElement(t, bc)
-	echanTest.SomeElements(t, bc)
-	echanTest.ShouldBlock(t, bc, 7) // +2 because of the goroutines
+	etest.ImmediateClosing(t, bc)
+	etest.OneElement(t, bc)
+	etest.SomeElements(t, bc)
+	etest.ShouldBlock(t, bc, 7) // +2 because of the goroutines
 }
 
 func BenchmarkSimple(b *testing.B) {
 	s := ering.New(100)
 	bc := queue.New(s)
-	echanTest.BenchmarkSimple(b, bc, 100)
+	etest.BenchmarkSimple(b, bc, 100)
 }

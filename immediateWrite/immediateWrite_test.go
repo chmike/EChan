@@ -4,18 +4,18 @@ import (
 	"testing"
 
 	"github.com/chmike/EChan/immediateWrite"
-	echanTest "github.com/chmike/EChan/testing"
+	etest "github.com/chmike/EChan/testing"
 )
 
 func TestAll(t *testing.T) {
 	bc := immediateWrite.New()
-	echanTest.ImmediateClosing(t, bc)
-	echanTest.OneElement(t, bc)
-	echanTest.SomeElements(t, bc)
-	echanTest.ShouldBlock(t, bc, 1)
+	etest.ImmediateClosing(t, bc)
+	etest.OneElement(t, bc)
+	etest.SomeElements(t, bc)
+	etest.ShouldBlock(t, bc, 1)
 }
 
 func BenchmarkSimple(b *testing.B) {
 	bc := immediateWrite.New()
-	echanTest.BenchmarkSimple(b, bc, 100)
+	etest.BenchmarkSimple(b, bc, 100)
 }
