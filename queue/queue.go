@@ -1,3 +1,6 @@
+// Package queue allows the usage of any queue as a backend for an echan (it manages the channels synchronisation).
+//
+// Different queue implementations are available in the subfolders.
 package queue
 
 import (

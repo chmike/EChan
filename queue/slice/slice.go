@@ -1,3 +1,5 @@
+// Package slice uses a simple slice as queue backend (with an initial capacity).
+// The size is actually unbounded.
 package slice
 
 import (

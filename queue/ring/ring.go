@@ -1,3 +1,4 @@
+// Package ring uses a fixed-sized slice as queue backend.
 package ring
 
 import (

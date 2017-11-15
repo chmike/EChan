@@ -1,3 +1,14 @@
+/*
+Package ering implements a queue whose capacity my grow and shrink as needed.
+
+Under normal usage (output faster than input), memory usage will be minimal.
+In sporadic congestion conditions, the capacity may grow as needed. When the
+congestion is resorbed, the internal buffer will shrink and free memory.
+
+Nevertheless, an upper capacity limit is defined where input will block in
+case the output is blocked. This limit is to avoid memory exhaustion and
+OS hog.
+*/
 package ering
 
 import (

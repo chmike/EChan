@@ -1,3 +1,4 @@
+// Package immediateWrite provides a echan which synchronously writes all items from in to out.
 package immediateWrite
 
 import (

@@ -1,3 +1,4 @@
+// Package bufferedChannel provides a echan using an intermediate buffered channel.
 package bufferedChannel
 
 import (
