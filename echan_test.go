@@ -101,8 +101,59 @@ func BenchmarkAll(b *testing.B) {
 			for _, s := range sizes {
 				b.Run(s.name, func(b *testing.B) {
 					for _, f := range factories {
-						bc := f.f(s.capacity)
 						b.Run(f.name, func(b *testing.B) {
+							bc := f.f(s.capacity)
+							be.b(b, bc, s.items)
+						})
+					}
+				})
+			}
+		})
+	}
+}
+
+func BenchmarkBuffers(b *testing.B) {
+	type factory func(int) echan.Interface
+	type qfactory func(int) queue.Interface
+	queueAdapted := func(q qfactory) func(int) echan.Interface {
+		return func(size int) echan.Interface {
+			return queue.New(q(size))
+		}
+	}
+	factories := []struct {
+		name string
+		f    factory
+	}{
+		{"bufChan", bufferedChannel.New},
+		{"ering", queueAdapted(ering.New)},
+		{"ring", queueAdapted(ring.New)},
+		{"slice", queueAdapted(slice.New)},
+	}
+	sizes := []struct {
+		name     string
+		capacity int
+		items    int
+	}{
+		{"SmallItems-LargeCap", 10000, 50},
+		{"LargerItems-LargeCap", 10000, 50000},
+	}
+	benches := []struct {
+		name string
+		b    func(*testing.B, echan.Interface, int)
+	}{
+		{"BufferBoth", etest.BenchmarkBuffBoth},
+		{"BufferOut_", etest.BenchmarkBuffOut},
+		{"BufferIn__", etest.BenchmarkBuffIn},
+		{"BufferNone", etest.BenchmarkBuffNone},
+	}
+
+	for _, be := range benches {
+		b.Run(be.name, func(b *testing.B) {
+			for _, s := range sizes {
+				b.Run(s.name, func(b *testing.B) {
+					for _, f := range factories {
+						b.Run(f.name, func(b *testing.B) {
+							bc := f.f(s.capacity)
 							be.b(b, bc, s.items)
 						})
 					}
