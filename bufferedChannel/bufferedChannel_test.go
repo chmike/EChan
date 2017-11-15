@@ -15,7 +15,7 @@ func TestAll(t *testing.T) {
 	etest.ShouldBlock(t, bc, 12) // +2 because of the goroutines
 }
 
-func BenchmarkSimple(b *testing.B) {
+func BenchmarkBuffBoth(b *testing.B) {
 	bc := bufferedChannel.New(100)
-	etest.BenchmarkSimple(b, bc, 100)
+	etest.BenchmarkBuffBoth(b, bc, 100)
 }

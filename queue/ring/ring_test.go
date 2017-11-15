@@ -44,8 +44,8 @@ func TestEchanCapped(t *testing.T) {
 	etest.ShouldBlock(t, bc, 7) // +2 because of the goroutines
 }
 
-func BenchmarkSimple(b *testing.B) {
+func BenchmarkBuffBoth(b *testing.B) {
 	s := ring.New(100)
 	bc := queue.New(s)
-	etest.BenchmarkSimple(b, bc, 100)
+	etest.BenchmarkBuffBoth(b, bc, 100)
 }

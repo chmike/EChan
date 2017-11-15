@@ -101,14 +101,44 @@ func ShouldBlock(t *testing.T, imp echan.Interface, size int) {
 	}
 }
 
-func BenchmarkSimple(b *testing.B, imp echan.Interface, size int) {
+func BenchmarkBuffBoth(b *testing.B, imp echan.Interface, size int) {
 	for n := 0; n < b.N; n++ {
-		in := make(chan interface{}, 100)
-		out := make(chan interface{}, 100)
+		in := make(chan interface{}, size)
+		out := make(chan interface{}, size)
 		for i := 0; i < size; i++ {
 			in <- i
 		}
 		close(in)
+		imp(in, out)
+		for _ = range out {
+		}
+	}
+}
+
+func BenchmarkBuffIn(b *testing.B, imp echan.Interface, size int) {
+	for n := 0; n < b.N; n++ {
+		in := make(chan interface{}, 100)
+		out := make(chan interface{})
+		for i := 0; i < size; i++ {
+			in <- i
+		}
+		close(in)
+		go imp(in, out)
+		for _ = range out {
+		}
+	}
+}
+
+func BenchmarkBuffOut(b *testing.B, imp echan.Interface, size int) {
+	for n := 0; n < b.N; n++ {
+		in := make(chan interface{})
+		out := make(chan interface{}, size)
+		go func() {
+			for i := 0; i < size; i++ {
+				in <- i
+			}
+			close(in)
+		}()
 		imp(in, out)
 		for _ = range out {
 		}

@@ -15,7 +15,7 @@ func TestAll(t *testing.T) {
 	etest.ShouldBlock(t, bc, 1)
 }
 
-func BenchmarkSimple(b *testing.B) {
+func BenchmarkBuffBoth(b *testing.B) {
 	bc := immediateWrite.New()
-	etest.BenchmarkSimple(b, bc, 100)
+	etest.BenchmarkBuffBoth(b, bc, 100)
 }

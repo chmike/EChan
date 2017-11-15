@@ -40,8 +40,8 @@ func TestEchan(t *testing.T) {
 	etest.SomeElements(t, bc)
 }
 
-func BenchmarkSimple(b *testing.B) {
+func BenchmarkBuffBoth(b *testing.B) {
 	s := slice.New(100)
 	bc := queue.New(s)
-	etest.BenchmarkSimple(b, bc, 100)
+	etest.BenchmarkBuffBoth(b, bc, 100)
 }
