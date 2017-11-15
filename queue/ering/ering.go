@@ -6,8 +6,7 @@ In sporadic congestion conditions, the capacity may grow as needed. When the
 congestion is resorbed, the internal buffer will shrink and free memory.
 
 Nevertheless, an upper capacity limit is defined where input will block in
-case the output is blocked. This limit is to avoid memory exhaustion and
-OS hog.
+case the output is blocked. This limit is to avoid memory exhaustion and OS hog.
 */
 package ering
 

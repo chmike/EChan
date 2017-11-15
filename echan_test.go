@@ -20,7 +20,7 @@ func Example() {
 	// congestion is resorbed, the internal buffer will shrink and free memory.
 	//
 	// Nevertheless, an upper capacity limit is defined where input will block in
-	// case the output is blocked. This limit is to avoid memory exhaustion and
+	// case the output is blocked. This limit is to avoid memory exhaustion and OS hog.
 	bc = queue.New(ering.New(5))
 
 	// ring uses a fixed-sized slice as queue backend.
