@@ -93,6 +93,7 @@ func BenchmarkAll(b *testing.B) {
 		{"BufferBoth", etest.BenchmarkBuffBoth},
 		{"BufferOut_", etest.BenchmarkBuffOut},
 		{"BufferIn__", etest.BenchmarkBuffIn},
+		{"BufferNone", etest.BenchmarkBuffNone},
 	}
 
 	for _, be := range benches {

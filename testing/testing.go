@@ -144,3 +144,19 @@ func BenchmarkBuffOut(b *testing.B, imp echan.Interface, size int) {
 		}
 	}
 }
+
+func BenchmarkBuffNone(b *testing.B, imp echan.Interface, size int) {
+	for n := 0; n < b.N; n++ {
+		in := make(chan interface{})
+		out := make(chan interface{})
+		go func() {
+			for i := 0; i < size; i++ {
+				in <- i
+			}
+			close(in)
+		}()
+		go imp(in, out)
+		for _ = range out {
+		}
+	}
+}
