@@ -6,32 +6,67 @@
 
 # EChan, the elastic channel
 
-Package echan provides a channel whose capacity my grow and shrink as needed.
+Package echan provides a way to insert a buffer between two channels.
 
-Under normal usage (output faster than input), memory usage will be minimal.
-In sporadic congestion conditions, the capacity may grow as needed. When the
-congestion is resorbed, the internal buffer will shrink and free memory.
-
-Nevertheless, an upper capacity limit is defined where input will block in
-case the output is blocked. This limit is to avoid memory exhaustion and
-OS hog.
+You can switch the implementation depending on your scenario.
 
 Example usage:
 
 ``` Go
-// Instantiating the elastic channel with an upper limit value
-c := echan.New(10000)
+package main
 
-// Queuing a value in the channel. Blocks if the channel is full.
-c.In() <- 123
+import (
+	"github.com/chmike/EChan"
+	"github.com/chmike/EChan/bufferedChannel"
+	"github.com/chmike/EChan/queue"
+	"github.com/chmike/EChan/queue/ering"
+	"github.com/chmike/EChan/queue/ring"
+	"github.com/chmike/EChan/queue/slice"
+)
 
-// Reading a value out of the channel. Blocks while the channel is empty.
-v := <-c.Out().(int) 
+func main() {
+	var bc echan.Interface
+	// Choose one of the implemenations:
 
-// Closing the channel
-c.Close()
+	// ering implements a queue whose capacity my grow and shrink as needed.
+	//
+	// Under normal usage (output faster than input), memory usage will be minimal.
+	// In sporadic congestion conditions, the capacity may grow as needed. When the
+	// congestion is resorbed, the internal buffer will shrink and free memory.
+	//
+	// Nevertheless, an upper capacity limit is defined where input will block in
+	// case the output is blocked. This limit is to avoid memory exhaustion and OS hog.
+	bc = queue.New(ering.New(5))
+
+	// ring uses a fixed-sized slice as queue backend.
+	bc = queue.New(ring.New(5))
+
+	// slice uses a simple slice as queue backend (with an initial capacity).
+	// The size is actually unbounded.
+	bc = queue.New(slice.New(5))
+
+	// bufferedChannel uses an intermediate buffered channel.
+	bc = bufferedChannel.New(5)
+
+	in := make(chan interface{})
+	out := make(chan interface{})
+
+	// Producer for 'in'
+	go func() {
+		for i := 0; i < 50; i++ {
+			in <- i
+		}
+		close(in)
+	}()
+
+	// buffering
+	go bc(in, out)
+
+	// Consumer for 'ou'
+	for _ = range out {
+	}
+}
+
 ```
 
 Based on an idea of [oliverpool](https://github.com/oliverpool) discussed [here](https://github.com/npat-efault/musings/issues/1#issuecomment-339889714).
-
-**Warning**: The EChan must be closed to be garbage collected. This is because of its internal go routine. If you don't close the EChan, your program will have a memory leak.

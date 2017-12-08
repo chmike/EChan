@@ -1,186 +1,164 @@
-package echan
+package echan_test
 
 import (
-	"sync"
 	"testing"
-	"time"
+
+	"github.com/chmike/EChan"
+	"github.com/chmike/EChan/bufferedChannel"
+	"github.com/chmike/EChan/immediateWrite"
+	"github.com/chmike/EChan/queue"
+	"github.com/chmike/EChan/queue/ering"
+	"github.com/chmike/EChan/queue/ring"
+	"github.com/chmike/EChan/queue/slice"
+	etest "github.com/chmike/EChan/testing"
 )
 
-func TestEChan1(t *testing.T) {
-	var c = New(200)
-	for i := 0; i < 100; i++ {
-		c.In() <- i
-	}
-	for i := 0; i < 100; i++ {
-		<-c.Out()
-	}
-	c.Close()
-	time.Sleep(100 * time.Millisecond)
-	if c.buf != nil {
-		t.Error("expected channel to be closed")
-	}
-}
+func Example() {
+	var bc echan.Interface
+	// Choose one of the implemenations:
 
-func TestEChan2(t *testing.T) {
-	var c = New(1000)
-	var in = 1000000
-	var out int
-	var w sync.WaitGroup
-	w.Add(1)
+	// ering implements a queue whose capacity my grow and shrink as needed.
+	//
+	// Under normal usage (output faster than input), memory usage will be minimal.
+	// In sporadic congestion conditions, the capacity may grow as needed. When the
+	// congestion is resorbed, the internal buffer will shrink and free memory.
+	//
+	// Nevertheless, an upper capacity limit is defined where input will block in
+	// case the output is blocked. This limit is to avoid memory exhaustion and OS hog.
+	bc = queue.New(ering.New(5))
+
+	// ring uses a fixed-sized slice as queue backend.
+	bc = queue.New(ring.New(5))
+
+	// slice uses a simple slice as queue backend (with an initial capacity).
+	// The size is actually unbounded.
+	bc = queue.New(slice.New(5))
+
+	// bufferedChannel uses an intermediate buffered channel.
+	bc = bufferedChannel.New(5)
+
+	in := make(chan interface{})
+	out := make(chan interface{})
+
+	// Producer for 'in'
 	go func() {
-		for out < in {
-			if _, ok := <-c.Out(); !ok {
-				break
-			}
-			out++
+		for i := 0; i < 50; i++ {
+			in <- i
 		}
-		w.Done()
+		close(in)
 	}()
-	for i := 0; i < in; i++ {
-		c.In() <- i
+
+	// buffering
+	go bc(in, out)
+
+	// Consumer for 'ou'
+	for _ = range out {
 	}
-	w.Wait()
-	if out != in {
-		t.Errorf("got %d, expected %d", out, in)
-	}
-	c.Close()
+	// Output:
 }
 
-func TestEmptyQueue(t *testing.T) {
-	var c = EChan{buf: make([]interface{}, 2)}
-
-	if c.popFront() != nil {
-		t.Error("expected nil file")
+func BenchmarkAll(b *testing.B) {
+	type factory func(int) echan.Interface
+	immediateWriteAdapted := func(int) echan.Interface {
+		return immediateWrite.New()
 	}
-	c.pushBack(nil)
-	if c.popFront() != nil {
-		t.Error("expected nil file")
-	}
-
-	c.pushBack(1)
-	c.pushBack(2)
-	var fo = c.popFront()
-	if fo.(int) != 1 {
-		t.Errorf("got %d, expected 1", fo.(int))
-	}
-	fo = c.popFront()
-	if fo.(int) != 2 {
-		t.Errorf("got %d, expected 2", fo.(int))
-	}
-	if c.popFront() != nil {
-		t.Error("expected nil file")
-	}
-}
-
-func TestGrowQueue(t *testing.T) {
-	var c = EChan{buf: make([]interface{}, 2)}
-
-	c.pushBack(1)
-	c.pushBack(2)
-	c.pushBack(3)
-	if len(c.buf) != 4 {
-		t.Errorf("got %d, expected 4", len(c.buf))
-	}
-
-	c.popFront()
-	c.pushBack(4)
-	c.pushBack(5)
-	c.pushBack(6)
-	if len(c.buf) != 8 {
-		t.Errorf("got %d, expected 8", len(c.buf))
-	}
-
-	for i := 2; i <= 6; i++ {
-		if f := c.popFront(); f == nil || f.(int) != i {
-			if f == nil {
-				t.Error("unexpected nil file")
-			} else {
-				t.Errorf("got %d, expected %d", f.(int), i)
-			}
+	type qfactory func(int) queue.Interface
+	queueAdapted := func(q qfactory) func(int) echan.Interface {
+		return func(size int) echan.Interface {
+			return queue.New(q(size))
 		}
 	}
-	if c.popFront() != nil {
-		t.Error("expected nil file")
+	factories := []struct {
+		name string
+		f    factory
+	}{
+		{"bufChan", bufferedChannel.New},
+		{"ering", queueAdapted(ering.New)},
+		{"ring", queueAdapted(ring.New)},
+		{"slice", queueAdapted(slice.New)},
+		{"none", immediateWriteAdapted},
+	}
+	sizes := []struct {
+		name     string
+		capacity int
+		items    int
+	}{
+		{"Small", 5, 5},
+		{"LargeItems-SmallCap", 50, 10000},
+	}
+	benches := []struct {
+		name string
+		b    func(*testing.B, echan.Interface, int)
+	}{
+		{"BufferBoth", etest.BenchmarkBuffBoth},
+		{"BufferOut_", etest.BenchmarkBuffOut},
+		{"BufferIn__", etest.BenchmarkBuffIn},
+		{"BufferNone", etest.BenchmarkBuffNone},
 	}
 
+	for _, be := range benches {
+		b.Run(be.name, func(b *testing.B) {
+			for _, s := range sizes {
+				b.Run(s.name, func(b *testing.B) {
+					for _, f := range factories {
+						b.Run(f.name, func(b *testing.B) {
+							bc := f.f(s.capacity)
+							be.b(b, bc, s.items)
+						})
+					}
+				})
+			}
+		})
+	}
 }
 
-func TestShrinkQueue(t *testing.T) {
-	var c = EChan{buf: make([]interface{}, 2)}
-	for i := 0; i < 256; i++ {
-		c.pushBack(i)
-	}
-	for i := 0; i < 256; i++ {
-		if f := c.popFront(); f == nil || f.(int) != i {
-			if f == nil {
-				t.Error("unexpected nil file")
-			} else {
-				t.Errorf("got %d, expected %d", f.(int), i)
-			}
+func BenchmarkBuffers(b *testing.B) {
+	type factory func(int) echan.Interface
+	type qfactory func(int) queue.Interface
+	queueAdapted := func(q qfactory) func(int) echan.Interface {
+		return func(size int) echan.Interface {
+			return queue.New(q(size))
 		}
 	}
-	if c.popFront() != nil {
-		t.Error("expected nil file")
+	factories := []struct {
+		name string
+		f    factory
+	}{
+		{"bufChan", bufferedChannel.New},
+		{"ering", queueAdapted(ering.New)},
+		{"ring", queueAdapted(ring.New)},
+		{"slice", queueAdapted(slice.New)},
 	}
-	if len(c.buf) != 2*minBufCap {
-		t.Errorf("got len %d, expected %d", len(c.buf), 2*minBufCap)
+	sizes := []struct {
+		name     string
+		capacity int
+		items    int
+	}{
+		{"SmallItems-LargeCap", 10000, 50},
+		{"LargerItems-LargeCap", 10000, 50000},
 	}
-}
-
-func TestMaxCapacity(t *testing.T) {
-	var c = New(0)
-
-	if c.max != 2*minBufCap {
-		t.Errorf("got %d, expected %d", c.max, 2*minBufCap)
+	benches := []struct {
+		name string
+		b    func(*testing.B, echan.Interface, int)
+	}{
+		{"BufferBoth", etest.BenchmarkBuffBoth},
+		{"BufferOut_", etest.BenchmarkBuffOut},
+		{"BufferIn__", etest.BenchmarkBuffIn},
+		{"BufferNone", etest.BenchmarkBuffNone},
 	}
 
-	c = New(100)
-	if c.max != 100-2*chanCap {
-		t.Errorf("got %d, expected %d", c.max, 100-2*chanCap)
-	}
-}
-
-func TestCloseEChan1(t *testing.T) {
-	var c = New(100)
-	time.Sleep(100 * time.Millisecond)
-	c.Close()
-	time.Sleep(100 * time.Millisecond)
-	if c.buf != nil {
-		t.Error("expected nil buf")
-	}
-}
-
-func TestCloseEChan2(t *testing.T) {
-	var c = New(1000)
-
-	time.Sleep(100 * time.Millisecond)
-	for i := 0; i < 200; i++ {
-		c.In() <- i
-	}
-	c.Close()
-	time.Sleep(100 * time.Millisecond)
-	if c.buf != nil {
-		t.Error("expected nil buf")
-	}
-}
-
-func TestCloseEChan3(t *testing.T) {
-	var c = New(100)
-	go func() {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Error("expected panic error")
+	for _, be := range benches {
+		b.Run(be.name, func(b *testing.B) {
+			for _, s := range sizes {
+				b.Run(s.name, func(b *testing.B) {
+					for _, f := range factories {
+						b.Run(f.name, func(b *testing.B) {
+							bc := f.f(s.capacity)
+							be.b(b, bc, s.items)
+						})
+					}
+				})
 			}
-		}()
-		for i := 0; i < 200; i++ {
-			c.In() <- i
-		}
-		t.Error("expected a panic")
-	}()
-	time.Sleep(250 * time.Millisecond)
-	c.Close()
-	time.Sleep(100 * time.Millisecond)
-	if c.buf != nil {
-		t.Error("expected nil buf")
+		})
 	}
 }
